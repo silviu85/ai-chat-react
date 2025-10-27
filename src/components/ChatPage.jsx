@@ -1,58 +1,88 @@
 // src/components/ChatPage.jsx
+
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import apiService from '../services/apiService';
 
 const ChatPage = () => {
+  // --- HOOKS: Called at the top level of the component ---
+  const { conversationId: paramId } = useParams();
+  const navigate = useNavigate();
+  
+  // --- STATE MANAGEMENT ---
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
-  const [conversationId, setConversationId] = useState(null);
+  const [conversationId, setConversationId] = useState(paramId || null);
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef(null);
-  const navigate = useNavigate();
   const [typingIndicator, setTypingIndicator] = useState('.');
+  const [currentTitle, setCurrentTitle] = useState('New Chat');
+  
+  // --- REFS ---
+  const messagesEndRef = useRef(null);
 
+  // --- HELPER FUNCTIONS ---
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // --- EFFECTS ---
+
+  // Effect to automatically scroll to the bottom when new messages are added.
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // This effect handles the typing indicator animation
-useEffect(() => {
+  // Effect to handle the animated "Typing..." indicator.
+  useEffect(() => {
     let intervalId;
-
     if (isLoading) {
-        // Start the animation when loading begins
-        intervalId = setInterval(() => {
-            setTypingIndicator(prev => {
-                if (prev.length >= 3) {
-                    return '.';
-                }
-                return prev + '.';
-            });
-        }, 400); // Change the speed of the animation here (in ms)
+      intervalId = setInterval(() => {
+        setTypingIndicator(prev => (prev.length >= 3 ? '.' : prev + '.'));
+      }, 400);
     }
+    // Cleanup function: this stops the interval when the effect is no longer needed.
+    return () => clearInterval(intervalId);
+  }, [isLoading]);
 
-    // This is the cleanup function. It runs when isLoading changes or the component unmounts.
-    return () => {
-        clearInterval(intervalId);
+  // Effect to load an existing conversation or reset for a new chat when the URL changes.
+  useEffect(() => {
+    setConversationId(paramId || null);
+    
+    const loadConversation = async () => {
+      if (paramId) {
+        setIsLoading(true);
+        try {
+          const data = await apiService(`/conversations/${paramId}`);
+          setMessages(data.messages || []);
+          setCurrentTitle(data.title || 'Chat');
+        } catch (err) {
+          console.error("Failed to load conversation", err);
+          navigate('/'); // Redirect to a new chat if the ID is invalid or fails to load.
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        // This is a new chat. Reset all relevant states.
+        setMessages([]);
+        setCurrentTitle('New Chat');
+      }
     };
-}, [isLoading]); // This effect depends only on the isLoading state
+    
+    loadConversation();
+  }, [paramId, navigate]); // This effect re-runs whenever the conversation ID in the URL changes.
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    navigate('/login');
-  };
+  // --- EVENT HANDLERS ---
 
+  /**
+   * Handles the submission of a new message.
+   */
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputValue.trim() || isLoading) return;
 
     const userMessage = { role: 'user', content: inputValue };
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
+    const currentInput = inputValue;
     setInputValue('');
     setIsLoading(true);
 
@@ -60,37 +90,62 @@ useEffect(() => {
       const data = await apiService('/chat/ask', {
         method: 'POST',
         body: JSON.stringify({
-          prompt: inputValue,
-          conversation_id: conversationId,
+          prompt: currentInput,
+          conversation_id: conversationId, 
         }),
       });
 
       const assistantMessage = { role: 'assistant', content: data.response };
-      setMessages((prev) => [...prev, assistantMessage]);
-      setConversationId(data.conversation_id);
+      setMessages(prev => [...prev, assistantMessage]);
+
+      // If this was the first message of a new chat...
+      if (!conversationId) {
+        // ...update the title locally for an instant UI update...
+        const newTitle = currentInput.length > 50 ? currentInput.substring(0, 47) + '...' : currentInput;
+        setCurrentTitle(newTitle);
+        // ...and update the URL with the new conversation ID from the API.
+        navigate(`/chat/${data.conversation_id}`, { replace: true });
+      } else {
+        // If it's an existing chat, just ensure the ID is up-to-date.
+        setConversationId(data.conversation_id);
+      }
+      
     } catch (error) {
       console.error('Failed to send message:', error);
       const errorMessage = { role: 'assistant', content: 'Sorry, I encountered an error.' };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // --- RENDER ---
   return (
     <div className="chat-page">
-      <button onClick={handleLogout} className="logout-button">Logout</button>
+      <div className="chat-header">
+        <h2>{currentTitle}</h2>
+      </div>
+
+      {messages.length === 0 && !isLoading && (
+        <div className="welcome-message">
+          <h1>Hello!</h1>
+          <p>How can I help you today?</p>
+        </div>
+      )}
+      
       <div className="messages-list">
         {messages.map((msg, index) => (
           <div key={index} className={`message ${msg.role}-message`}>
             {msg.content}
           </div>
         ))}
+
         {isLoading && (
-  <div className="message assistant-message">
-    Typing{typingIndicator}
-  </div>
-)}
+          <div className="message assistant-message">
+            Typing{typingIndicator}
+          </div>
+        )}
+        
         <div ref={messagesEndRef} />
       </div>
 
