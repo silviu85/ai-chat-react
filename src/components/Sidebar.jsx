@@ -1,6 +1,5 @@
-// src/components/Sidebar.jsx (Versiunea Corectată și Finală)
+// src/components/Sidebar.jsx 
 import { NavLink, useNavigate } from 'react-router-dom';
-// Aici este importul corectat, care include FaPlusCircle
 import { FaPlusCircle, FaHistory, FaUserCog, FaSignOutAlt } from 'react-icons/fa';
 
 const Sidebar = () => {
@@ -17,7 +16,6 @@ const Sidebar = () => {
         <h3>AI Chat</h3>
       </div>
       <nav className="sidebar-nav">
-        {/* Acum, FaPlusCircle este definit și poate fi folosit aici */}
         <NavLink to="/" end>
           <FaPlusCircle className="sidebar-icon" /> New Chat
         </NavLink>

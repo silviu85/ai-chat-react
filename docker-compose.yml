@@ -1,0 +1,24 @@
+# File: ai-chat-frontend/docker-compose.yml
+
+services:
+  nginx:
+    build:
+      context: .
+      args:
+        # Pass the API base URL from the .env file
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+    container_name: ai_nginx
+    ports:
+      - "8080:80"
+    volumes:
+      # Mount the nginx.conf file into the container
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      # This mounts the Laravel public directory into the Nginx container at /var/www/public
+      - ../ai-php-api/public:/var/www/public
+    networks:
+      - ai-network
+
+networks:
+  ai-network:
+    name: ai-shared-network # Use the same fixed name as the backend
+    external: true # Tells Docker Compose this network is created elsewhere

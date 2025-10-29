@@ -40,10 +40,10 @@ const RegisterPage = () => {
       <h1>Register</h1>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={handleSubmit}>
-        <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <input type="password" placeholder="Confirm Password" value={password_confirmation} onChange={(e) => setPasswordConfirmation(e.target.value)} required />
+        <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
+        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email"/>
+        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="password"/>
+        <input type="password" placeholder="Confirm Password" value={password_confirmation} onChange={(e) => setPasswordConfirmation(e.target.value)} required  autoComplete="password_confirmation"/>
         <button type="submit" disabled={isLoading}>
           {isLoading ? 'Registering...' : 'Register'}
         </button>
