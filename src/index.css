@@ -117,27 +117,59 @@ body {
   border-bottom-left-radius: 4px;
 }
 
+
 .input-form {
   display: flex;
+  align-items: center; /* Vertically align items in the middle */
+  gap: 0.5rem; /* Add spacing between all items */
   padding: 1rem;
   border-top: 1px solid #333;
 }
 
 .input-form input {
-  flex-grow: 1;
+  flex-grow: 1; /* The input field will take up all available space */
+  width: 100%; /* Ensure it tries to take full width before growing */
   padding: 0.8rem;
   border: none;
   background-color: var(--input-bg-color);
   color: var(--text-color);
   border-radius: 8px;
-  margin-right: 0.5rem;
   font-size: 1rem;
+  /* Eliminăm margin-right, deoarece folosim 'gap' pe container */
 }
 .input-form input:focus {
   outline: 2px solid var(--user-bubble-color);
 }
 
+
+.provider-select {
+  /* Do not grow or shrink */
+  flex-shrink: 0; 
+  
+  padding: 0.8rem; /* Use consistent padding */
+  border: 1px solid #555;
+  background-color: var(--input-bg-color);
+  color: var(--text-color);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  /* Eliminăm margin-right, deoarece folosim 'gap' pe container */
+}
+
+.provider-select:focus {
+  outline: 2px solid var(--user-bubble-color);
+  border-color: var(--user-bubble-color);
+}
+
+.provider-select:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
 .input-form button {
+  /* Do not grow or shrink */
+  flex-shrink: 0; 
+
   background: var(--user-bubble-color);
   border: none;
   border-radius: 8px;
@@ -435,3 +467,23 @@ body {
 .skeleton-date {
   width: 30%;
 }
+.provider-select {
+    padding: 0 0.8rem;
+    border: 1px solid #555;
+    background-color: var(--input-bg-color);
+    color: var(--text-color);
+    border-radius: 8px;
+    margin-right: 0.5rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.provider-select:focus {
+    outline: 2px solid var(--user-bubble-color);
+}
+
+.provider-select:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+

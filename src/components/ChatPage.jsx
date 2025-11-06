@@ -16,6 +16,7 @@ const ChatPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [typingIndicator, setTypingIndicator] = useState('.');
   const [currentTitle, setCurrentTitle] = useState('New Chat');
+  const [selectedProvider, setSelectedProvider] = useState('default');
   
   // --- REFS ---
   const messagesEndRef = useRef(null);
@@ -87,12 +88,18 @@ const ChatPage = () => {
     setIsLoading(true);
 
     try {
+        const payload = {
+        prompt: currentInput,
+        conversation_id: conversationId,
+       };
+
+      if (selectedProvider !== 'default') {
+              payload.provider = selectedProvider;
+      }
+
       const data = await apiService('/chat/ask', {
-        method: 'POST',
-        body: JSON.stringify({
-          prompt: currentInput,
-          conversation_id: conversationId, 
-        }),
+          method: 'POST',
+          body: JSON.stringify(payload),
       });
 
       const assistantMessage = { role: 'assistant', content: data.response };
@@ -157,6 +164,17 @@ const ChatPage = () => {
           placeholder="Type your message..."
           disabled={isLoading}
         />
+         <select 
+              className="provider-select" 
+              value={selectedProvider} 
+              onChange={(e) => setSelectedProvider(e.target.value)}
+              disabled={isLoading}
+          >
+              <option value="default">Default Provider</option>
+              <option value="gemini">Gemini</option>
+              <option value="chatgpt">ChatGPT</option>
+              <option value="claude">Claude (soon)</option>
+          </select>
         <button type="submit" disabled={isLoading}>
           &#10148;
         </button>
