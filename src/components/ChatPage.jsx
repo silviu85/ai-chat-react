@@ -173,7 +173,7 @@ const ChatPage = () => {
               <option value="default">Default Provider</option>
               <option value="gemini">Gemini</option>
               <option value="chatgpt">ChatGPT</option>
-              <option value="claude">Claude (soon)</option>
+              <option value="claude">Claude</option>
           </select>
         <button type="submit" disabled={isLoading}>
           &#10148;

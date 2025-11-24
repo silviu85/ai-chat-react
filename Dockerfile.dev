@@ -1,0 +1,12 @@
+# File: ai-chat-frontend/Dockerfile.dev
+
+FROM node:20-alpine
+WORKDIR /app
+
+# Copy only package files to leverage cache
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# The command to run will be provided by docker-compose
